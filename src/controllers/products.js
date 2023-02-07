@@ -72,6 +72,19 @@ const getAllProducts = async (req, res) => {
   res.status(200).json({ products, nbHits: products.length });
 };
 
+const getProduct = async (req, res, next) => {
+  const product_id = req.params.id;
+  const product = await Product.findById({ _id: product_id });
+
+  if (!product) {
+    return next(createError(`No product with id: ${product_id}`, 400));
+  }
+
+  res.status(200).send({
+    data: product,
+  });
+};
+
 const updateProduct = async (req, res, next) => {
   const product_id = req.params.id;
   const product = await Product.findOneAndUpdate(
@@ -92,6 +105,7 @@ const updateProduct = async (req, res, next) => {
 
 module.exports = {
   deleteProduct,
+  getProduct,
   getAllProducts,
   updateProduct,
 };
