@@ -1,13 +1,5 @@
 const Product = require("../models/product");
-
-const getAllProductsStatic = async (req, res) => {
-  const products = await Product.find({})
-    .select("name price")
-    .sort("name")
-    .limit(10)
-    .skip();
-  res.status(200).json({ products, nbHits: products.length });
-};
+const { createError } = require("../errors/custom-error.js");
 
 const getAllProducts = async (req, res) => {
   const { featured, company, name, sort, fields, numeric_filters } = req.query;
@@ -70,7 +62,17 @@ const getAllProducts = async (req, res) => {
   res.status(200).json({ products, nbHits: products.length });
 };
 
+const deleteProduct = async (req, res, next) => {
+  const product_id = req.params.id;
+  const product = await Product.findOneAndDelete({ _id: product_id });
+  if (!product) {
+    return next(createError(`No product with id: ${product_id}`, 400));
+  }
+
+  res.status(200).send({ message: `Product with id: ${product_id} deleted.` });
+};
+
 module.exports = {
   getAllProducts,
-  getAllProductsStatic,
+  deleteProduct,
 };
