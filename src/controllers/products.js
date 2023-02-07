@@ -1,6 +1,16 @@
 const Product = require("../models/product");
 const { createError } = require("../errors/custom-error.js");
 
+const deleteProduct = async (req, res, next) => {
+  const product_id = req.params.id;
+  const product = await Product.findOneAndDelete({ _id: product_id });
+  if (!product) {
+    return next(createError(`No product with id: ${product_id}`, 400));
+  }
+
+  res.status(200).send({ message: `Product with id: ${product_id} deleted.` });
+};
+
 const getAllProducts = async (req, res) => {
   const { featured, company, name, sort, fields, numeric_filters } = req.query;
   const query_object = {};
@@ -62,17 +72,26 @@ const getAllProducts = async (req, res) => {
   res.status(200).json({ products, nbHits: products.length });
 };
 
-const deleteProduct = async (req, res, next) => {
+const updateProduct = async (req, res, next) => {
   const product_id = req.params.id;
-  const product = await Product.findOneAndDelete({ _id: product_id });
+  const product = await Product.findOneAndUpdate(
+    { _id: product_id },
+    req.body,
+    { new: true, runValidators: true }
+  );
+
   if (!product) {
     return next(createError(`No product with id: ${product_id}`, 400));
   }
 
-  res.status(200).send({ message: `Product with id: ${product_id} deleted.` });
+  res.status(200).send({
+    message: `Product with id: ${product_id} updated.`,
+    data: product,
+  });
 };
 
 module.exports = {
-  getAllProducts,
   deleteProduct,
+  getAllProducts,
+  updateProduct,
 };
